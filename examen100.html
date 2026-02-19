@@ -1,0 +1,1216 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Registro de Egresos</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #f3f0ff;
+    --surface2: #0a2540;
+    --border: #c4b5fd;
+    --gold: #38bdf8;
+    --gold-light: #7dd3fc;
+    --text: #1e1b4b;
+    --text-muted: #6ea8c8;
+    --danger: #f87171;
+    --success: #86efac;
+    --radius: 12px;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    background-image: 
+      radial-gradient(ellipse at 10% 20%, rgba(14,116,144,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 80%, rgba(167,139,250,0.06) 0%, transparent 50%);
+  }
+
+  /* ───── NAVBAR ───── */
+  nav {
+    background: var(--surface);
+    border-bottom: 2px solid #c4b5fd;
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(16px);
+    background: rgba(255,255,255,0.92);
+  }
+
+  .nav-brand {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 1px;
+    cursor: pointer;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 0.25rem;
+    align-items: center;
+  }
+
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .nav-btn:hover { background: #0a1f35; color: var(--text); }
+  .nav-btn.active { color: var(--gold); background: rgba(56,189,248,0.10); }
+
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--gold);
+  }
+
+  .avatar-placeholder {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #fff;
+    border: 2px solid var(--gold);
+    flex-shrink: 0;
+  }
+
+  .logout-btn {
+    background: rgba(248,81,73,0.15);
+    border: 1px solid rgba(239,68,68,0.4);
+    color: var(--danger);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    padding: 0.4rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .logout-btn:hover { background: rgba(248,81,73,0.25); }
+
+  /* ───── VIEWS ───── */
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* ───── AUTH SCREEN ───── */
+  .auth-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: 
+      radial-gradient(ellipse at 20% 50%, rgba(56,189,248,0.10) 0%, transparent 60%),
+      radial-gradient(ellipse at 80% 20%, rgba(14,116,144,0.08) 0%, transparent 50%),
+      var(--bg);
+    padding: 2rem;
+  }
+
+  .auth-box {
+    background: #061a2e;
+    border: 1px solid #1a4a6e;
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 24px 64px rgba(0,100,180,0.2);
+  }
+
+  .auth-logo {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .auth-logo h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    color: var(--gold);
+    font-weight: 700;
+  }
+
+  .auth-logo p {
+    color: var(--gold-light);
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+  }
+
+  .auth-tabs {
+    display: flex;
+    background: #0a1f35;
+    border-radius: 10px;
+    padding: 4px;
+    margin-bottom: 1.75rem;
+  }
+
+  .auth-tab {
+    flex: 1;
+    background: none;
+    border: none;
+    color: var(--gold-light);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.6rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .auth-tab.active {
+    background: var(--surface);
+    color: var(--gold);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  }
+
+  .form-group { margin-bottom: 1.1rem; }
+
+  .form-group label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--gold-light);
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.3px;
+  }
+
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    background: #0a1f35;
+    border: 2px solid var(--border);
+    border-radius: 9px;
+    color: #ffffff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .form-group input::placeholder {
+    color: #4a7a9b;
+    opacity: 1;
+  }
+
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(56,189,248,0.15);
+    background: #0d2540;
+  }
+
+  .form-group select option { background: #0a1f35; color: #ffffff; }
+
+  .avatar-upload-area {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .avatar-upload-area:hover { border-color: var(--gold); }
+
+  .avatar-upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .avatar-preview {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold);
+    margin: 0 auto 0.5rem;
+    display: block;
+  }
+
+  .upload-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+  .upload-text { font-size: 0.85rem; color: var(--text-muted); }
+
+  .btn-primary {
+    width: 100%;
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    padding: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.35);
+  }
+
+  .btn-primary:active { transform: translateY(0); }
+
+  .btn-secondary {
+    background: #0a1f35;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 500;
+    padding: 0.7rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-secondary:hover { border-color: var(--gold); color: var(--gold); }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    border-radius: 9px;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .alert-error { background: rgba(248,81,73,0.12); border: 1px solid rgba(239,68,68,0.4); color: #ff8a85; }
+  .alert-success { background: rgba(63,185,80,0.12); border: 1px solid rgba(63,185,80,0.3); color: #5cc96b; }
+
+  /* ───── MAIN APP ───── */
+  #app-shell { display: none; }
+
+  .page-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 2.5rem 2rem;
+  }
+
+  .page-header {
+    margin-bottom: 2rem;
+  }
+
+  .page-header h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .page-header p {
+    color: var(--gold-light);
+    margin-top: 0.4rem;
+    font-size: 0.95rem;
+  }
+
+  .gold-bar {
+    width: 48px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    margin-top: 0.75rem;
+  }
+
+  /* ───── HERO ───── */
+  .hero {
+    position: relative;
+    height: 460px;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 3rem;
+  }
+
+  .hero img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(3,15,28,0.85) 0%, rgba(14,116,144,0.35) 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 2.5rem;
+  }
+
+  .hero-overlay h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 3rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.1;
+    text-shadow: 0 2px 20px rgba(0,0,0,0.5);
+    max-width: 600px;
+  }
+
+  .hero-overlay h1 span { color: var(--gold-light); }
+
+  .hero-overlay p {
+    color: rgba(255,255,255,0.8);
+    margin-top: 0.75rem;
+    font-size: 1.05rem;
+    max-width: 500px;
+  }
+
+  /* ───── CARDS ───── */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .egreso-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem;
+    transition: all 0.25s;
+    cursor: default;
+  }
+
+  .egreso-card:hover {
+    border-color: var(--gold);
+    transform: translateY(-3px);
+    box-shadow: 0 12px 32px rgba(56,189,248,0.15);
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 0.6rem;
+  }
+
+  .card-desc {
+    font-size: 0.875rem;
+    color: var(--gold-light);
+    line-height: 1.6;
+  }
+
+  .card-badge {
+    display: inline-block;
+    background: rgba(56,189,248,0.10);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    margin-top: 1rem;
+    border: 1px solid rgba(56,189,248,0.25);
+    letter-spacing: 0.5px;
+  }
+
+  /* ───── FORM CARD ───── */
+  .form-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .form-card-header {
+    background: linear-gradient(135deg, #0a2540, #0c3358);
+    border-bottom: 2px solid #c4b5fd;
+    padding: 1.25rem 1.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .form-card-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .form-card-body { padding: 1.75rem; }
+
+  /* ───── TABLE ───── */
+  .table-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .table-card-header {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 2px solid #c4b5fd;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .table-card-header h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+  }
+
+  .count-badge {
+    background: rgba(56,189,248,0.10);
+    color: var(--gold);
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.3rem 0.75rem;
+    border-radius: 20px;
+    border: 1px solid rgba(56,189,248,0.25);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  th {
+    background: #0a1f35;
+    color: var(--gold-light);
+    font-weight: 500;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 0.85rem 1.25rem;
+    text-align: left;
+    border-bottom: 2px solid #c4b5fd;
+  }
+
+  td {
+    padding: 0.9rem 1.25rem;
+    border-bottom: 1px solid rgba(196,181,253,0.5);
+    color: var(--text);
+    vertical-align: middle;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(56,189,248,0.04); }
+
+  .empty-state {
+    text-align: center;
+    padding: 3rem;
+    color: var(--gold-light);
+  }
+
+  .empty-state .empty-icon { font-size: 3rem; margin-bottom: 1rem; opacity: 0.4; }
+
+  .price-tag {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    color: var(--gold);
+  }
+
+  .user-cell {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+
+  .mini-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .mini-avatar-placeholder {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #fff;
+    flex-shrink: 0;
+  }
+
+  .submit-row {
+    display: flex;
+    gap: 0.75rem;
+    margin-top: 0.5rem;
+  }
+
+  .btn-submit {
+    flex: 1;
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    border: none;
+    border-radius: 10px;
+    color: #fff;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-submit:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 24px rgba(56,189,248,0.35);
+  }
+
+  .btn-reset {
+    background: #0a1f35;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--gold-light);
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    padding: 0.75rem 1.25rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-reset:hover { border-color: var(--gold); color: var(--text); }
+
+  /* ───── TOAST ───── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--success);
+    color: var(--text);
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 8px 32px rgba(56,189,248,0.15);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    transform: translateY(120%);
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  .toast.show { transform: translateY(0); }
+  .toast.error { border-color: var(--danger); }
+
+  /* ───── RESPONSIVE ───── */
+  @media (max-width: 768px) {
+    .cards-grid { grid-template-columns: 1fr; }
+    .hero { height: 300px; }
+    .hero-overlay h1 { font-size: 1.8rem; }
+    nav { padding: 0 1rem; }
+    .page-container { padding: 1.5rem 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ AUTH SCREEN ══════════ -->
+<div id="auth-screen" class="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">
+      <h1>💼 SRE</h1>
+      <p>Sistema de Registro de Egresos</p>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" onclick="switchTab('login')">Iniciar Sesión</button>
+      <button class="auth-tab" onclick="switchTab('register')">Registrarse</button>
+    </div>
+
+    <!-- ── LOGIN ── -->
+    <div id="login-form">
+      <div id="login-error" class="alert alert-error" style="display:none"></div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="login-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="login-password" placeholder="••••••••" onkeydown="if(event.key==='Enter')doLogin()" />
+      </div>
+      <button class="btn-primary" onclick="doLogin()">Entrar al sistema</button>
+    </div>
+
+    <!-- ── REGISTER ── -->
+    <div id="register-form" style="display:none">
+      <div id="register-error" class="alert alert-error" style="display:none"></div>
+      <div class="form-group">
+        <label>Foto de perfil (opcional)</label>
+        <div class="avatar-upload-area" onclick="document.getElementById('reg-avatar-input').click()">
+          <input type="file" id="reg-avatar-input" accept="image/*" style="display:none" onchange="previewAvatar(this)">
+          <div id="avatar-preview-container">
+            <div class="upload-icon">📷</div>
+            <div class="upload-text">Haz clic para subir tu foto</div>
+          </div>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Nombre completo</label>
+        <input type="text" id="reg-nombre" placeholder="Tu nombre" />
+      </div>
+      <div class="form-group">
+        <label>Correo electrónico</label>
+        <input type="email" id="reg-email" placeholder="tu@correo.com" />
+      </div>
+      <div class="form-group">
+        <label>Contraseña</label>
+        <input type="password" id="reg-password" placeholder="Mínimo 6 caracteres" />
+      </div>
+      <div class="form-group">
+        <label>Confirmar contraseña</label>
+        <input type="password" id="reg-password2" placeholder="Repite tu contraseña" onkeydown="if(event.key==='Enter')doRegister()" />
+      </div>
+      <button class="btn-primary" onclick="doRegister()">Crear cuenta</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ APP SHELL ══════════ -->
+<div id="app-shell">
+
+  <!-- NAVBAR -->
+  <nav>
+    <span class="nav-brand" onclick="navigate('inicio')">💼 SRE Sistema</span>
+    <div class="nav-links" id="nav-links">
+      <button class="nav-btn" id="nav-inicio" onclick="navigate('inicio')">Inicio</button>
+      <button class="nav-btn" id="nav-registrar" onclick="navigate('registrar')">Registrar Egreso</button>
+      <button class="nav-btn" id="nav-ver-egresos" onclick="navigate('ver-egresos')">Ver Egresos</button>
+      <button class="nav-btn" id="nav-ver-usuarios" onclick="navigate('ver-usuarios')">Ver Usuarios</button>
+    </div>
+    <div class="nav-user">
+      <div id="nav-avatar-wrap"></div>
+      <span id="nav-username" style="font-size:0.9rem;font-weight:500;color:var(--text-muted)"></span>
+      <button class="logout-btn" onclick="doLogout()">Salir</button>
+    </div>
+  </nav>
+
+  <!-- ── VIEW: INICIO ── -->
+  <div class="view active" id="view-inicio">
+    <div class="page-container">
+      <div class="hero">
+        <img src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1400&q=80" alt="Finanzas ordenadas" />
+        <div class="hero-overlay">
+          <h1>Sistema de registro<br>de <span>egresos</span></h1>
+          <p>Gestiona tus gastos comunes, multas municipales y compras de abastecimiento de forma ordenada y eficiente.</p>
+        </div>
+      </div>
+
+      <div class="page-header">
+        <h2>Tipos de Egresos</h2>
+        <p>Selecciona el tipo de egreso que deseas registrar en el sistema</p>
+        <div class="gold-bar"></div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="egreso-card" onclick="navigate('registrar')">
+          <div class="card-icon">🏠</div>
+          <div class="card-title">Gastos Comunes</div>
+          <div class="card-desc">Mantención, limpieza, seguridad y todos los servicios compartidos del edificio o conjunto habitacional.</div>
+          <span class="card-badge">TIPO 1</span>
+        </div>
+        <div class="egreso-card" onclick="navigate('registrar')">
+          <div class="card-icon">🏛️</div>
+          <div class="card-title">Pagos de Multas Municipales</div>
+          <div class="card-desc">Controla el pago de multas, permisos y obligaciones municipales de forma organizada y puntual.</div>
+          <span class="card-badge">TIPO 2</span>
+        </div>
+        <div class="egreso-card" onclick="navigate('registrar')">
+          <div class="card-icon">🛒</div>
+          <div class="card-title">Compras Semanales Abastecimiento</div>
+          <div class="card-desc">Registro detallado de compras de abastecimiento semanal: alimentos, insumos y materiales necesarios.</div>
+          <span class="card-badge">TIPO 3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: REGISTRAR EGRESOS ── -->
+  <div class="view" id="view-registrar">
+    <div class="page-container">
+      <div class="page-header">
+        <h2>Registra tu egreso aquí</h2>
+        <p>Completa el formulario para agregar un nuevo egreso al sistema</p>
+        <div class="gold-bar"></div>
+      </div>
+
+      <div class="form-card">
+        <div class="form-card-header">
+          <span>📋</span>
+          <h3>Formulario de Egreso</h3>
+        </div>
+        <div class="form-card-body">
+          <div id="egreso-success" class="alert alert-success" style="display:none">✅ Datos registrados correctamente</div>
+          <div id="egreso-error" class="alert alert-error" style="display:none"></div>
+
+          <div class="form-group">
+            <label>Descripción</label>
+            <input type="text" id="egreso-desc" placeholder="Describe el egreso..." />
+          </div>
+          <div class="form-group">
+            <label>Precio ($)</label>
+            <input type="number" id="egreso-precio" placeholder="0" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Usuario</label>
+            <select id="egreso-usuario">
+              <option value="">— Selecciona un usuario registrado —</option>
+            </select>
+            <small style="color:var(--text-muted);font-size:0.8rem;margin-top:0.3rem;display:block">Solo aparecen usuarios reales registrados en el sistema.</small>
+          </div>
+
+          <div class="submit-row">
+            <button class="btn-submit" onclick="registrarEgreso()">📤 Enviar</button>
+            <button class="btn-reset" onclick="resetEgresoForm()">Limpiar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: VER EGRESOS ── -->
+  <div class="view" id="view-ver-egresos">
+    <div class="page-container">
+      <div class="page-header">
+        <h2>Todos los egresos registrados</h2>
+        <p>Listado completo de egresos almacenados en el sistema</p>
+        <div class="gold-bar"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>📊 Egresos</h3>
+          <span class="count-badge" id="egresos-count">0 registros</span>
+        </div>
+        <div id="egresos-table-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── VIEW: VER USUARIOS ── -->
+  <div class="view" id="view-ver-usuarios">
+    <div class="page-container">
+      <div class="page-header">
+        <h2>Usuarios Registrados en el sistema</h2>
+        <p>Listado de todas las cuentas creadas</p>
+        <div class="gold-bar"></div>
+      </div>
+
+      <div class="table-card">
+        <div class="table-card-header">
+          <h3>👥 Usuarios</h3>
+          <span class="count-badge" id="usuarios-count">0 registros</span>
+        </div>
+        <div id="usuarios-table-wrap"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /app-shell -->
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <span id="toast-icon">✅</span>
+  <span id="toast-msg"></span>
+</div>
+
+<script>
+/* ════════════════════════════════════════
+   DATA LAYER — localStorage
+════════════════════════════════════════ */
+const DB = {
+  getUsers: () => JSON.parse(localStorage.getItem('sre_users') || '[]'),
+  saveUsers: (u) => localStorage.setItem('sre_users', JSON.stringify(u)),
+  getEgresos: () => JSON.parse(localStorage.getItem('sre_egresos') || '[]'),
+  saveEgresos: (e) => localStorage.setItem('sre_egresos', JSON.stringify(e)),
+  getSession: () => JSON.parse(localStorage.getItem('sre_session') || 'null'),
+  saveSession: (s) => localStorage.setItem('sre_session', JSON.stringify(s)),
+  clearSession: () => localStorage.removeItem('sre_session'),
+};
+
+/* ════════════════════════════════════════
+   AVATAR PREVIEW
+════════════════════════════════════════ */
+let pendingAvatarData = null;
+
+function previewAvatar(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    pendingAvatarData = e.target.result;
+    document.getElementById('avatar-preview-container').innerHTML = `
+      <img src="${e.target.result}" class="avatar-preview" />
+      <div class="upload-text" style="margin-top:0.4rem">Foto seleccionada ✔</div>
+    `;
+  };
+  reader.readAsDataURL(file);
+}
+
+/* ════════════════════════════════════════
+   AUTH TABS
+════════════════════════════════════════ */
+function switchTab(tab) {
+  document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById('login-form').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('register-form').style.display = tab === 'register' ? 'block' : 'none';
+}
+
+/* ════════════════════════════════════════
+   REGISTER
+════════════════════════════════════════ */
+function doRegister() {
+  const nombre = document.getElementById('reg-nombre').value.trim();
+  const email = document.getElementById('reg-email').value.trim().toLowerCase();
+  const pass = document.getElementById('reg-password').value;
+  const pass2 = document.getElementById('reg-password2').value;
+  const errEl = document.getElementById('register-error');
+
+  const show = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
+  errEl.style.display = 'none';
+
+  if (!nombre) return show('⚠️ Ingresa tu nombre completo.');
+  if (!email || !email.includes('@')) return show('⚠️ Ingresa un correo válido.');
+  if (pass.length < 6) return show('⚠️ La contraseña debe tener al menos 6 caracteres.');
+  if (pass !== pass2) return show('⚠️ Las contraseñas no coinciden.');
+
+  const users = DB.getUsers();
+  if (users.find(u => u.email === email)) return show('⚠️ Ese correo ya está registrado.');
+
+  const newUser = {
+    id: Date.now(),
+    nombre,
+    email,
+    password: btoa(pass), // simple obfuscation
+    avatar: pendingAvatarData || null,
+    createdAt: new Date().toLocaleDateString('es-CL'),
+  };
+
+  users.push(newUser);
+  DB.saveUsers(users);
+
+  showToast('✅ Cuenta creada exitosamente. ¡Ya puedes iniciar sesión!');
+  pendingAvatarData = null;
+
+  // reset and switch to login
+  document.getElementById('reg-nombre').value = '';
+  document.getElementById('reg-email').value = '';
+  document.getElementById('reg-password').value = '';
+  document.getElementById('reg-password2').value = '';
+  document.getElementById('avatar-preview-container').innerHTML = `
+    <div class="upload-icon">📷</div>
+    <div class="upload-text">Haz clic para subir tu foto</div>
+  `;
+  document.querySelectorAll('.auth-tab')[0].click();
+}
+
+/* ════════════════════════════════════════
+   LOGIN
+════════════════════════════════════════ */
+function doLogin() {
+  const email = document.getElementById('login-email').value.trim().toLowerCase();
+  const pass = document.getElementById('login-password').value;
+  const errEl = document.getElementById('login-error');
+
+  const show = (msg) => { errEl.textContent = msg; errEl.style.display = 'block'; };
+  errEl.style.display = 'none';
+
+  if (!email) return show('⚠️ Ingresa tu correo.');
+  if (!pass) return show('⚠️ Ingresa tu contraseña.');
+
+  const users = DB.getUsers();
+  const user = users.find(u => u.email === email && u.password === btoa(pass));
+
+  if (!user) return show('⚠️ Correo o contraseña incorrectos.');
+
+  DB.saveSession(user);
+  initApp(user);
+}
+
+/* ════════════════════════════════════════
+   LOGOUT
+════════════════════════════════════════ */
+function doLogout() {
+  DB.clearSession();
+  document.getElementById('app-shell').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('login-email').value = '';
+  document.getElementById('login-password').value = '';
+  showToast('👋 Sesión cerrada correctamente', false);
+}
+
+/* ════════════════════════════════════════
+   INIT APP
+════════════════════════════════════════ */
+function initApp(user) {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'block';
+
+  // Set nav user info
+  document.getElementById('nav-username').textContent = user.nombre.split(' ')[0];
+
+  const avatarWrap = document.getElementById('nav-avatar-wrap');
+  if (user.avatar) {
+    avatarWrap.innerHTML = `<img src="${user.avatar}" class="avatar" alt="${user.nombre}">`;
+  } else {
+    const initials = user.nombre.split(' ').map(n => n[0]).join('').slice(0,2).toUpperCase();
+    avatarWrap.innerHTML = `<div class="avatar-placeholder">${initials}</div>`;
+  }
+
+  navigate('inicio');
+}
+
+/* ════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════ */
+function navigate(page) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+  const viewMap = {
+    'inicio': ['view-inicio', 'nav-inicio'],
+    'registrar': ['view-registrar', 'nav-registrar'],
+    'ver-egresos': ['view-ver-egresos', 'nav-ver-egresos'],
+    'ver-usuarios': ['view-ver-usuarios', 'nav-ver-usuarios'],
+  };
+
+  const [viewId, navId] = viewMap[page] || viewMap['inicio'];
+  document.getElementById(viewId).classList.add('active');
+  if (navId) document.getElementById(navId).classList.add('active');
+
+  if (page === 'registrar') loadUsuariosSelect();
+  if (page === 'ver-egresos') renderEgresosTable();
+  if (page === 'ver-usuarios') renderUsuariosTable();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ════════════════════════════════════════
+   EGRESOS
+════════════════════════════════════════ */
+function loadUsuariosSelect() {
+  const sel = document.getElementById('egreso-usuario');
+  const users = DB.getUsers();
+  sel.innerHTML = '<option value="">— Selecciona un usuario registrado —</option>';
+  users.forEach(u => {
+    const opt = document.createElement('option');
+    opt.value = u.id;
+    opt.textContent = `${u.nombre} (${u.email})`;
+    sel.appendChild(opt);
+  });
+}
+
+function registrarEgreso() {
+  const desc = document.getElementById('egreso-desc').value.trim();
+  const precio = parseFloat(document.getElementById('egreso-precio').value);
+  const userId = document.getElementById('egreso-usuario').value;
+  const successEl = document.getElementById('egreso-success');
+  const errorEl = document.getElementById('egreso-error');
+
+  successEl.style.display = 'none';
+  errorEl.style.display = 'none';
+
+  if (!desc) { errorEl.textContent = '⚠️ Ingresa una descripción.'; errorEl.style.display = 'block'; return; }
+  if (isNaN(precio) || precio < 0) { errorEl.textContent = '⚠️ Ingresa un precio válido.'; errorEl.style.display = 'block'; return; }
+  if (!userId) { errorEl.textContent = '⚠️ Selecciona un usuario.'; errorEl.style.display = 'block'; return; }
+
+  const users = DB.getUsers();
+  const user = users.find(u => String(u.id) === String(userId));
+  const session = DB.getSession();
+
+  const egreso = {
+    id: Date.now(),
+    descripcion: desc,
+    precio,
+    id_usuario: parseInt(userId),
+    nombre_usuario: user ? user.nombre : 'Desconocido',
+    avatar_usuario: user ? user.avatar : null,
+    registrado_por: session ? session.nombre : '',
+    fecha: new Date().toLocaleDateString('es-CL'),
+  };
+
+  console.log('📤 Datos ingresados en el formulario:', egreso);
+
+  const egresos = DB.getEgresos();
+  egresos.push(egreso);
+  DB.saveEgresos(egresos);
+
+  successEl.style.display = 'block';
+  showToast('✅ Datos registrados correctamente');
+
+  document.getElementById('egreso-desc').value = '';
+  document.getElementById('egreso-precio').value = '';
+  document.getElementById('egreso-usuario').value = '';
+
+  setTimeout(() => { successEl.style.display = 'none'; }, 4000);
+}
+
+function resetEgresoForm() {
+  document.getElementById('egreso-desc').value = '';
+  document.getElementById('egreso-precio').value = '';
+  document.getElementById('egreso-usuario').value = '';
+  document.getElementById('egreso-success').style.display = 'none';
+  document.getElementById('egreso-error').style.display = 'none';
+}
+
+function renderEgresosTable() {
+  const egresos = DB.getEgresos();
+  const wrap = document.getElementById('egresos-table-wrap');
+  document.getElementById('egresos-count').textContent = egresos.length + ' registros';
+
+  console.log('📊 Todos los egresos registrados:', egresos);
+
+  if (egresos.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">📭</div><p>No hay egresos registrados aún.</p></div>`;
+    return;
+  }
+
+  const rows = egresos.map((e, i) => {
+    const avatarHtml = e.avatar_usuario
+      ? `<img src="${e.avatar_usuario}" class="mini-avatar" />`
+      : `<div class="mini-avatar-placeholder">${e.nombre_usuario.charAt(0).toUpperCase()}</div>`;
+
+    return `<tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td>${e.descripcion}</td>
+      <td class="price-tag">$${e.precio.toLocaleString('es-CL')}</td>
+      <td>
+        <div class="user-cell">
+          ${avatarHtml}
+          <span>${e.nombre_usuario}</span>
+        </div>
+      </td>
+      <td style="color:var(--text-muted);font-size:0.85rem">${e.fecha}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table>
+    <thead><tr>
+      <th>#</th><th>Descripción</th><th>Precio</th><th>Usuario</th><th>Fecha</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+function renderUsuariosTable() {
+  const users = DB.getUsers();
+  const wrap = document.getElementById('usuarios-table-wrap');
+  document.getElementById('usuarios-count').textContent = users.length + ' registros';
+
+  console.log('👥 Usuarios registrados en el sistema:', users);
+
+  if (users.length === 0) {
+    wrap.innerHTML = `<div class="empty-state"><div class="empty-icon">👤</div><p>No hay usuarios registrados aún.</p></div>`;
+    return;
+  }
+
+  const rows = users.map((u, i) => {
+    const avatarHtml = u.avatar
+      ? `<img src="${u.avatar}" class="mini-avatar" />`
+      : `<div class="mini-avatar-placeholder">${u.nombre.charAt(0).toUpperCase()}</div>`;
+
+    return `<tr>
+      <td style="color:var(--text-muted)">${i+1}</td>
+      <td>
+        <div class="user-cell">
+          ${avatarHtml}
+          <span>${u.nombre}</span>
+        </div>
+      </td>
+      <td>${u.email}</td>
+      <td style="color:var(--text-muted);font-size:0.85rem">${u.createdAt}</td>
+    </tr>`;
+  }).join('');
+
+  wrap.innerHTML = `<table>
+    <thead><tr>
+      <th>#</th><th>Nombre</th><th>Email</th><th>Registrado</th>
+    </tr></thead>
+    <tbody>${rows}</tbody>
+  </table>`;
+}
+
+/* ════════════════════════════════════════
+   TOAST
+════════════════════════════════════════ */
+let toastTimer;
+function showToast(msg, success = true) {
+  const t = document.getElementById('toast');
+  document.getElementById('toast-msg').textContent = msg;
+  t.className = 'toast' + (success ? '' : ' error');
+  void t.offsetWidth;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+(function boot() {
+  const session = DB.getSession();
+  if (session) {
+    // verify session user still exists
+    const users = DB.getUsers();
+    const still = users.find(u => u.id === session.id);
+    if (still) {
+      initApp(still);
+      return;
+    }
+    DB.clearSession();
+  }
+  document.getElementById('auth-screen').style.display = 'flex';
+})();
+</script>
+</body>
+</html>
